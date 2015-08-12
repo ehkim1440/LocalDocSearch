@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -29,7 +30,7 @@ import java.util.Scanner;
 public class TestLucene {
 	private static String m_strIndexDirectory = "/home/eunhye/Desktop/LuceneTest";
 	private static String m_strDataDirectory = "/home/eunhye/Desktop/DataTest";
-	private static String m_strSerializeDirectory = "/home/eunhye/Desktop/SerializedTest";
+	private static String m_strSerializeFilePath = "/home/eunhye/Desktop/SerializedTest/IndexedFile.list";
 	
     private Document getDocument(String strFileName) throws Exception 
     {
@@ -119,12 +120,16 @@ public class TestLucene {
     private void serializeFileList(HashMap<String, Integer> stFileList)
     {
 		try {
+			File stSerializeFile = new File(m_strSerializeFilePath);
+			stSerializeFile.delete();
+			
 	        FileOutputStream output;
-			output = new FileOutputStream(m_strSerializeDirectory);
+			output = new FileOutputStream(m_strSerializeFilePath);
 			
 	    	for(String s : stFileList.keySet())
 	    	{
-	    		output.write(s.getBytes());
+	    		String strWriteData = s + "\n";
+	    		output.write(strWriteData.getBytes());
 	    	}
 
 			output.close();
@@ -155,8 +160,9 @@ public class TestLucene {
 //    addDoc(w, "Managing Gigabytes", "55063554A");
 //    addDoc(w, "The Art of Computer Science", "9900333X");
     TestLucene t = new TestLucene();
-    HashMap<String, Integer> stSerializedFileList = t.getSerializedFileList(m_strIndexDirectory);
+    HashMap<String, Integer> stSerializedFileList = t.getSerializedFileList(m_strSerializeFilePath);
     ArrayList<String> stFileList = t.getFileList(m_strDataDirectory);
+    
     for(String s : stFileList)
     {
     	try {
@@ -172,6 +178,7 @@ public class TestLucene {
 		}
     }
     w.close();
+    t.serializeFileList(stSerializedFileList);
 
     String strQuery = "";
     Scanner in = new Scanner(System.in);
