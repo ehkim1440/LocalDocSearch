@@ -23,7 +23,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class TestLucene {
@@ -37,7 +37,7 @@ public class TestLucene {
         Document doc = new Document();
 
         doc.add(new TextField("contents", new FileReader(f)));
-        doc.add(new TextField("filename", f.getName(), Field.Store.YES));
+        doc.add(new TextField("filename", f.getAbsolutePath(), Field.Store.YES));
         doc.add(new StringField("fullpath", f.getCanonicalPath(), Field.Store.YES));
 
         return doc;
@@ -74,9 +74,9 @@ public class TestLucene {
     	return stReturnList;
     }
     
-    private LinkedList<String> getSerializedFileList(String strSerialPath)
+    private HashMap<String, Integer> getSerializedFileList(String strSerialPath)
     {
-    	LinkedList<String> strReturnList = new LinkedList<String>();
+    	HashMap<String, Integer> strReturnList = new HashMap<String, Integer>();
     	
     	File stSerialFile = new File(strSerialPath);
     	do
@@ -97,7 +97,11 @@ public class TestLucene {
 					while(stFIn.hasNextLine())
 					{
 						String strPath = stFIn.nextLine();
-						strReturnList.add(strPath);						
+						if(false == strReturnList.containsKey(strPath))
+						{
+							strReturnList.put(strPath, 1);						
+						}
+							
 					}
 					
 					stFIn.close();
@@ -112,13 +116,13 @@ public class TestLucene {
     	return strReturnList;
     }
     
-    private void serializeFileList(LinkedList<String> stFileList)
+    private void serializeFileList(HashMap<String, Integer> stFileList)
     {
 		try {
 	        FileOutputStream output;
 			output = new FileOutputStream(m_strSerializeDirectory);
 			
-	    	for(String s : stFileList)
+	    	for(String s : stFileList.keySet())
 	    	{
 	    		output.write(s.getBytes());
 	    	}
@@ -151,11 +155,17 @@ public class TestLucene {
 //    addDoc(w, "Managing Gigabytes", "55063554A");
 //    addDoc(w, "The Art of Computer Science", "9900333X");
     TestLucene t = new TestLucene();
+    HashMap<String, Integer> stSerializedFileList = t.getSerializedFileList(m_strIndexDirectory);
     ArrayList<String> stFileList = t.getFileList(m_strDataDirectory);
     for(String s : stFileList)
     {
     	try {
-			w.addDocument(t.getDocument(s));
+    		if(false == stSerializedFileList.containsKey(s))
+    		{
+    			w.addDocument(t.getDocument(s));
+    			stSerializedFileList.put(s, 1);
+    		}
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -167,6 +177,7 @@ public class TestLucene {
     Scanner in = new Scanner(System.in);
     do
     {
+    	System.out.print("Please type text : ");
     	strQuery = in.nextLine();
     	if(0 == strQuery.compareTo("exit"))
     	{
